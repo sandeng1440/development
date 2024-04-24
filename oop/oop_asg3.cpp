@@ -43,7 +43,7 @@ public:
   string formatDate(const time_t &);
 };
 
-// login interface
+// login function
 bool login(string, string);
 // menu for the admin after login
 int adminMenu();
