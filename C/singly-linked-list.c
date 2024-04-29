@@ -1,26 +1,26 @@
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Node{
-	int val;
-	struct Node *next;
+struct Node {
+  uint32_t val;
+  struct Node *next;
 };
 
-int main(int argc, char *argv[]){
-	
-	struct Node *head = malloc(sizeof(struct Node));
-	head->val = 46;
-	struct Node *current = malloc(sizeof(struct Node));
-	current->val = 62;
-	head->next = current;
+int32_t main(int argc, char *argv[]) {
 
-	current = malloc(sizeof(struct Node));
-	current->val = 23;
-	head->next->next = current;
+  struct Node *head = malloc(sizeof(struct Node));
+  head->val = 46;
+  struct Node *current = malloc(sizeof(struct Node));
+  current->val = 62;
+  head->next = current;
 
-	printf("%d -> %d -> %d\n",head->val,head->next->val,head->next->next->val);
+  current = malloc(sizeof(struct Node));
+  current->val = 23;
+  head->next->next = current;
 
-	return 0;
+  printf("%d -> %d -> %d\n", head->val, head->next->val, head->next->next->val);
+
+  return 0;
 }
-
