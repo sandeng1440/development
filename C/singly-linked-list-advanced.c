@@ -44,7 +44,7 @@ struct Node *insertFirst(struct Node *head, int val) {
   }
 }
 
-int32_t main() {
+int main() {
   struct Node *List = createNode(6);
   insertLast(List, 420);
   insertLast(List, 10);
