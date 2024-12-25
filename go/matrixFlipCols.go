@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-// NOTE: This prograam flips the rows of a matrix
+// NOTE: This program flips the rows of a matrix
 func main() {
 	arr := [][]int{
 		{0, 1, 2},
@@ -11,6 +11,7 @@ func main() {
 	}
 	str := "-"
 	fmt.Printf("\nUnreflected array\n")
+	printTwenty := printNTimes(20)
 	printTwenty(str)
 	printArr(arr)
 	reflectHorizontal(arr)
@@ -40,8 +41,18 @@ func reflectHorizontal(ar [][]int) [][]int {
 	}
 	return ar
 }
-func printTwenty(str string) {
-	for i := 0; i < 20; i++ {
-		fmt.Printf("%v", str)
+
+func printNTimes(n int) func(string) {
+	f := func(s string) {
+		for i := 0; i < n; i++ {
+			fmt.Printf("%v", s)
+		}
 	}
+	return f
 }
+
+// func printTwenty(str string) {
+// 	for i := 0; i < 20; i++ {
+// 		fmt.Printf("%v", str)
+// 	}
+// }

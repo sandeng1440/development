@@ -9,11 +9,13 @@
 <body>
     <h1>Network Monitor Dashboard</h1>
     
+    <!-- stats container -->
     <div class="stats-container">
         <h2>Current Statistics</h2>
         <div class="current-stats" id="currentStats"></div> <div class="additional-stats" id="additionalStats"></div>
     </div>
     
+    <!-- charts container -->
     <div class="container">
         <div class="chart">
             <canvas id="trafficChart"></canvas>

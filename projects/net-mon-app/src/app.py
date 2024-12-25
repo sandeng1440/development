@@ -1,3 +1,4 @@
+# imports
 import sqlite3
 from bottle import Bottle, run, template, static_file, response
 import scapy.all as scapy
@@ -12,30 +13,34 @@ import socket
 import pingparsing
 import random
 
+# database class
 class DB:
-    def __init__(self, db_name='network_monitor.db'):
-        self.db_name = db_name
+    def __init__(self, db_devices='devices.db', db_stats='stats.db'):
+        self.db_devices = db_devices
+        self.db_stats = db_stats
 
-    def init_db(self):
-        with sqlite3.connect(self.db_name) as conn:
+    def db_init_devices(self):
+        with sqlite3.connect(self.db_devices) as conn:
             c = conn.cursor()
-            
             c.execute('''CREATE TABLE IF NOT EXISTS devices
                          (mac TEXT PRIMARY KEY, ip TEXT, hostname TEXT, 
-                          first_seen TIMESTAMP, last_seen TIMESTAMP)''')
-            
+                         first_seen TIMESTAMP, last_seen TIMESTAMP)''')
+            conn.commit()
+
+    def db_init_stats(self):
+        with sqlite3.connect(self.db_stats) as cn:
+            c = cn.cursor()
             c.execute('''CREATE TABLE IF NOT EXISTS network_stats
                          (timestamp TIMESTAMP PRIMARY KEY, bytes_sent INTEGER, 
-                          bytes_recv INTEGER, packets_sent INTEGER, 
-                          packets_recv INTEGER)''')
+                         bytes_recv INTEGER, packets_sent INTEGER, 
+                         packets_recv INTEGER)''')
             
             c.execute('''CREATE INDEX IF NOT EXISTS idx_timestamp 
                          ON network_stats(timestamp)''')
-            
-            conn.commit()
+            cn.commit()
 
     def insert_device(self, mac, ip, hostname, current_time):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_devices) as conn:
             c = conn.cursor()
             c.execute('''INSERT OR REPLACE INTO devices 
                         (mac, ip, hostname, first_seen, last_seen)
@@ -46,7 +51,7 @@ class DB:
             conn.commit()
 
     def get_bandwidth(self):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_stats) as conn:
             c = conn.cursor()
             c.execute('''
                 SELECT timestamp, 
@@ -61,7 +66,7 @@ class DB:
             return c.fetchall()
 
     def get_throughput(self):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_stats) as conn:
             c = conn.cursor()
             c.execute('''
                 SELECT timestamp, 
@@ -75,9 +80,8 @@ class DB:
             ''')
             return c.fetchall()
 
-
     def insert_network_stats(self, current_time, stats):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_stats) as conn:
             c = conn.cursor()
             c.execute('''INSERT INTO network_stats 
                          (timestamp, bytes_sent, bytes_recv, 
@@ -92,7 +96,7 @@ class DB:
             conn.commit()
 
     def get_network_stats(self):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_stats) as conn:
             c = conn.cursor()
             c.execute('''SELECT timestamp, bytes_sent, bytes_recv, 
                                 packets_sent, packets_recv 
@@ -102,11 +106,12 @@ class DB:
             return c.fetchall()
 
     def get_devices(self):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(self.db_devices) as conn:
             c = conn.cursor()
             c.execute('SELECT * FROM devices ORDER BY last_seen DESC')
             return c.fetchall()
 
+# network statistics class
 class NetStats:
     def __init__(self, db_manager):
         self.db_manager = db_manager
@@ -120,14 +125,14 @@ class NetStats:
             
             current_time = datetime.datetime.now()
             
-            for sent, received in ans:
+            for _, received in ans:
                 mac = received.hwsrc
                 ip = received.psrc
                 
                 try:
                     hostname = socket.gethostbyaddr(ip)[0]
                 except socket.herror:
-                    hostname = ip
+                    hostname = 'Unknown'
                 
                 self.db_manager.insert_device(mac, ip, hostname, current_time)
 
@@ -141,6 +146,7 @@ class NetStats:
             self.db_manager.insert_network_stats(current_time, stats)
             time.sleep(2)
 
+# main class
 class NetworkMonitorApp:
     def __init__(self):
         self.app = Bottle()
@@ -191,24 +197,21 @@ class NetworkMonitorApp:
             'packet_burst': packet_burst
         }
 
-
-
     def get_bandwidth(self):
         rows = self.db_manager.get_bandwidth()
         return {
             'timestamps': [row[0] for row in rows],
-            'bandwidth_sent': [row[1] if row[1] is not None else 0 for row in rows],
-            'bandwidth_recv': [row[2] if row[2] is not None else 0 for row in rows]
+            'bandwidth_sent': [(int(row[1])/8) if row[1] is not None else 0 for row in rows],
+            'bandwidth_recv': [(int(row[2])/8) if row[2] is not None else 0 for row in rows]
         }
 
     def get_throughput(self):
         rows = self.db_manager.get_throughput()
         return {
             'timestamps': [row[0] for row in rows],
-            'throughput_sent': [row[1] if row[1] is not None else 0 for row in rows],
-            'throughput_recv': [row[2] if row[2] is not None else 0 for row in rows]
+            'throughput_sent': [(int(row[1])/8) if row[1] is not None else 0 for row in rows],
+            'throughput_recv': [(int(row[2])/8) if row[2] is not None else 0 for row in rows]
         }
-
 
     def get_devices(self):
         rows = self.db_manager.get_devices()
@@ -224,11 +227,13 @@ class NetworkMonitorApp:
         return json.dumps(devices)
 
     def run(self):
-        self.db_manager.init_db()
+        self.db_manager.db_init_devices()
+        self.db_manager.db_init_stats()
         Thread(target=self.net_stats.scan_network, daemon=True).start()
         Thread(target=self.net_stats.collect_stats, daemon=True).start()
-        run(self.app, host='localhost', port=8080, reloader=True)
+        run(self.app, host='localhost', port=9090, reloader=True)
 
+# if __name__ == '__main__'
 if __name__ == '__main__':
     app = NetworkMonitorApp()
     app.run()

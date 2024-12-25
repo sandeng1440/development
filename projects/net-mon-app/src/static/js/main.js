@@ -3,19 +3,20 @@ let packetsChart = null;
 let bandwidthChart = null;
 let throughputChart = null;
 
+// byte formatting
 function formatBytes(bytes) {
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB'];
-  if (bytes === 0) return '0 Bytes';
+  const sizes = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z'];
+  if (bytes === 0) return '0 B';
   let i = 0;
 
   while (bytes >= 1024 && i < (sizes.length - 1)) {
     bytes /= 1024;
     i++;
   }
-  return b + sizes[i];
+  return `${bytes.toPrecision(3)} ${sizes[i]}`;
 }
 
-
+// time formatting
 function formatTimeAgo(timestamp) {
   const now = moment();
   const time = moment(timestamp);
@@ -30,7 +31,7 @@ function formatTimeAgo(timestamp) {
   }
 }
 
-
+// axis formatting
 function formatAxisLabel(value, maxDigits = 3) {
   const suffixes = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z'];
   let suffixIndex = 0;
@@ -44,6 +45,7 @@ function formatAxisLabel(value, maxDigits = 3) {
 }
 
 
+// updating current stats
 function updateCurrentStats(latestData) {
   const stats = document.getElementById('currentStats');
   const lastIndex = latestData.timestamps.length - 1;
@@ -71,6 +73,8 @@ function updateCurrentStats(latestData) {
   }
 }
 
+
+// updating additional stats
 function updateAdditionalStats() {
   fetch('/additional_stats')
     .then(response => response.json())
@@ -90,6 +94,8 @@ function updateAdditionalStats() {
     });
 }
 
+
+// updating charts
 function updateCharts() {
   Promise.all([
     fetch('/stats').then(response => response.json()),
@@ -100,6 +106,7 @@ function updateCharts() {
 
     const labels = statsData.timestamps.map(timestamp => formatTimeAgo(timestamp));
 
+    // chart opts
     const chartOptions = {
       animation: false,
       responsive: true,
@@ -296,6 +303,8 @@ function updateCharts() {
     });
 
     // Throughput Chart
+
+    // Throughput chart
     throughputChart = new Chart(document.getElementById('throughputChart'), {
       type: 'line',
       data: {
@@ -345,6 +354,8 @@ function updateCharts() {
 }
 
 
+
+// updating devices
 function updateDevices() {
   fetch('/devices')
     .then(response => response.json())
@@ -373,7 +384,8 @@ function updateDevices() {
     });
 }
 
-// Update charts and stats every 2 seconds
+
+// update charts and stats every 2 seconds
 setInterval(() => {
   updateCharts();
   updateAdditionalStats();
