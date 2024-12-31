@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // NOTE: This program flips the rows of a matrix
 func main() {
@@ -50,9 +52,3 @@ func printNTimes(n int) func(string) {
 	}
 	return f
 }
-
-// func printTwenty(str string) {
-// 	for i := 0; i < 20; i++ {
-// 		fmt.Printf("%v", str)
-// 	}
-// }
