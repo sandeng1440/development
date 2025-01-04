@@ -17,7 +17,7 @@ func (rt *rot13Reader) Read(b []byte) (int, error) {
 	}
 	// rot13
 	for i := 0; i < n; i++ {
-		if 'a' <= b[i] && b[i] <= 'z' {
+		if 'a' <= b[i] && b[i] <= 'z' { // single quotes for runes, double for strings
 			b[i] = byte((int(b[i]-'a')+13)%26 + 'a')
 		} else if 'A' <= b[i] && b[i] <= 'Z' {
 			b[i] = byte((int(b[i]-'A')+13)%26 + 'A')
