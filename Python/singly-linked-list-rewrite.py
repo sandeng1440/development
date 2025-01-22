@@ -7,13 +7,13 @@ class Node:
 class Link_list:
     def __init__(self, value) -> None:
         self.head = Node(value)
-        print("insert_front(", value, "):", self.print_list())
+        print(f"insert_front({value}): {self}")
 
     def insert_front(self, value) -> None:
         newNode = Node(value)
         newNode.next = self.head
         self.head = newNode
-        print("insert_front(", value, "):", self.print_list())
+        print(f"insert_front({value}): {self}")
 
     def insert_back(self, value) -> None:
         newNode = Node(value)
@@ -21,7 +21,7 @@ class Link_list:
         while current.next is not None:
             current = current.next
         current.next = newNode
-        print("insert_back(", value, "):", self.print_list())
+        print(f"insert_back({value}): {self}")
 
     def insert_at(self, index, value) -> None:
         current = self.head
@@ -30,18 +30,20 @@ class Link_list:
         newNode = Node(value)
         newNode.next = current.next
         current.next = newNode
-        print("insert_at(", index, ",", value, "):", self.print_list())
+        print(f"insert_at({index}, {value}): {self}")
 
-    def print_list(self) -> None:
+    def __str__(self) -> str:
         current = self.head
+        out = ''
         while current is not None:
-            print(current.value, "-> ", end="")
+            out += f'{current.value} -> '
             current = current.next
-        print("None")
-
+        out += 'None'
+        return out
 
 myList = Link_list(35)
-myList.print_list()
+print(myList)
 myList.insert_front(3)
 myList.insert_back(67)
 myList.insert_at(1, 9)
+print(myList)

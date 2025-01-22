@@ -26,8 +26,8 @@ func main() {
 	app.Main()
 }
 
-type C = layout.Context
-type D = layout.Dimensions
+// type C = layout.Context
+// type D = layout.Dimensions
 
 func draw(w *app.Window) error {
 	// ops are the operations from the UI
