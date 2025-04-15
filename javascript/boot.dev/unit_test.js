@@ -8,32 +8,32 @@ export const assert = {
     }
   },
   deepEqual(actual, expected, message) {
-    if (actual.length != expected.length) {
+    if (actual.length !== expected.length) {
       throw new Error(`Assertion Failed: ${message}`);
     }
-    let a = [...actual];
-    let b = [...expected];
-    if (Array.isArray(a[0]) || Array.isArray(b[0])) {
-      for (let i = 0; i < a.length; ++i) {
-        for (let j = 0; j < a[i].length; ++j) {
-          if (a[i][j] != b[i][j]) {
-            throw new Error(`Assertion Failed: ${message}`)
-          }
-        }
+    if (!Array.isArray(actual[0])) {
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        throw new Error(`Assertion Failed: ${message}`);
       }
-    } else {
-      a.sort();
-      b.sort();
-      for (let i = 0; i < a.length; ++i) {
-        if (a[i] != b[i]) {
-          throw new Error(`Assertion Failed: ${message}`);
-        }
+      return
+    }
+    const a = [];
+    const b = [];
+    for (let i = 0; i < a.length; ++i) {
+      a.push(JSON.stringify(actual[i]));
+      b.push(JSON.stringify(expected[i]));
+    }
+    a.sort();
+    b.sort();
+    for (let i = 0; i < a.length; ++i) {
+      if (a[0] !== b[0]) {
+        throw new Error(`Assertion Failed: ${message}`);
       }
     }
   },
 };
 
-export function describe(name, fn) {
+export async function describe(name, fn) {
   console.log(`\n[TEST SUITE] ${name}`);
   try {
     fn();
@@ -42,7 +42,7 @@ export function describe(name, fn) {
   }
 }
 
-export function it(name, fn) {
+export async function it(name, fn) {
   try {
     fn();
     console.log(`✔ PASS: ${name}`);
