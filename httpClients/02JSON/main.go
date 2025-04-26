@@ -1,5 +1,7 @@
 package main
 
+import "sync"
+
 const issueList = `
 [
 	{
